@@ -1,0 +1,50 @@
+import os
+import sys
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types as genai_types
+
+
+# Carga las variables de entorno desde el archivo .env
+load_dotenv()
+api_key = os.environ.get("GEMINI_API_KEY")
+
+def main():
+    equivs = {'-v': '--verbose'}
+    bflags = dict(verbose=False)
+    client = genai.Client(api_key=api_key)
+
+    if len(sys.argv) < 2:
+        prompt = input("Please enter a prompt or type QUIT to exit:  ")
+        if prompt.upper() == "QUIT":
+            sys.exit(0)
+        prompt = prompt.strip()
+    else:
+        args = sys.argv[1:]
+        while True:
+            item, *args = args
+            if not args:
+                break
+            key = equivs.get(item, item)[2:]
+            bflags[key] = True
+        prompt = item
+
+    messages = [
+        genai_types.Content(role="user", parts=[genai_types.Part(text=prompt)])
+    ]
+    genai_types.Part
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents=messages
+    )
+    if response is None or response.usage_metadata is None:
+        print("Response is malformed")
+        return
+    print(response.text)
+    if bflags['verbose']:
+        print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
+        print(f'Completion tokens: {response.usage_metadata.candidates_token_count}')
+        print(f'Total tokens: {response.usage_metadata.total_token_count}')
+
+if __name__ == "__main__":
+    main()
