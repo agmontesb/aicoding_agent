@@ -1,6 +1,7 @@
 import os
+from google.genai import types as genai_types
 
-from config import check_working_directory, FunctionError
+from functions.config import check_working_directory, FunctionError
 
 
 def get_file_info(working_directory, directory=''):
@@ -24,6 +25,22 @@ def get_file_info(working_directory, directory=''):
         for dir in dirs
     ]
     return '\n'.join(info)
+
+
+
+schema_get_file_info = genai_types.FunctionDeclaration(
+    name='get_file_info',
+    description='List files in the specified directory',
+    parameters=genai_types.Schema(
+        type=genai_types.Type.OBJECT,
+        properties={
+            'directory': genai_types.Schema(
+                type=genai_types.Type.STRING,
+                description='The directory to list files from, relative to the working directory. If not provided, list files in the working directory itself',
+            ),
+        },
+    ),
+)
 
 if __name__ == '__main__':
     working_directory = os.getcwd()

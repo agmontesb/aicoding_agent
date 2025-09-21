@@ -1,6 +1,7 @@
 import pathlib
 
 MAX_CHARS = 10000
+TIMED_OUT = 30
 
 
 class FunctionError(Exception):
