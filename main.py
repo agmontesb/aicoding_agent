@@ -1,3 +1,7 @@
+# Gemini 2.0 Flash - Coding Agent Example
+# https://www.youtube.com/watch?v=YtHdaXuOAks&list=WL&index=34&t=2015s
+# This script demonstrates a coding agent that can read, write, and execute Python files based on user prompts.
+
 import os
 import sys
 from dotenv import load_dotenv
@@ -38,10 +42,11 @@ def main():
     '''
 
     if len(sys.argv) < 2:
-        prompt = input("Please enter a prompt or type QUIT to exit:  ")
-        if prompt.upper() == "QUIT":
-            sys.exit(0)
-        prompt = prompt.strip()
+        prompt = 'How the calculator module  in the pkg directory ultimately renders its responses?'
+        # prompt = input("Please enter a prompt or type QUIT to exit:  ")
+        # if prompt.upper() == "QUIT":
+        #     sys.exit(0)
+        # prompt = prompt.strip()
     else:
         args = sys.argv[1:]
         while True:
@@ -69,29 +74,40 @@ def main():
         system_instruction=system_prompt,
         tools=[available_functions],
     )
+
+    MAX_ITERS = 20
     
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
-        contents=messages, 
-        config=config,
-    )
+    for _ in range(MAX_ITERS):
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-001",
+            contents=messages, 
+            config=config,
+        )
 
-    if response is None or response.usage_metadata is None:
-        print("Response is malformed")
-        return
+        if response is None or response.usage_metadata is None:
+            print("Response is malformed")
+            return
 
-    if bflags['verbose']:
-        print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
-        print(f'Completion tokens: {response.usage_metadata.candidates_token_count}')
-        print(f'Total tokens: {response.usage_metadata.total_token_count}')
+        if bflags['verbose']:
+            print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
+            print(f'Completion tokens: {response.usage_metadata.candidates_token_count}')
+            print(f'Total tokens: {response.usage_metadata.total_token_count}')
 
-    if response.function_calls:
-        for function_call_part in response.function_calls:
-            # print(f'Calling function: {function_call_part.name}({function_call_part.args})')
-            result = call_function(function_call_part, bflags['verbose'])
-            print(result)
-    else:
-        print(response.text)
+        messages.extend(
+            candidate.content
+            for candidate in response.candidates 
+            if candidate.content is not None
+        )
+
+        if response.function_calls:
+            messages.append(genai_types.Content(role='model', parts=[]))
+            for function_call_part in response.function_calls:
+                # result = call_function(function_call_part, bflags['verbose'])
+                result = call_function(function_call_part, True)
+                messages[-1].parts.append(result)
+        else:
+            print(response.text)
+            break 
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ def get_file_info(working_directory, directory=''):
         return str(e)
 
     if not file_path.exists():
-        raise f'ERROR: {file_path} not found'
+        raise FunctionError('ERROR: {file_path} not found')
 
     info = []
     fnc = lambda x, bflag=False: f'- {os.path.basename(x)}: file_size={os.path.getsize(x)} bytes, is_dir={bflag}'

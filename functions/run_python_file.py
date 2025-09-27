@@ -30,8 +30,8 @@ def run_python_file(working_directory, file_path, args=None):
         if not output.stdout and not output.stderr:
             to_return.append(f'No output produced')
         else:
-            to_return.append(f'STDOUT:{output.stdout.decode("utf-8")}')
-            to_return.append(f'STDERR:{output.stderr.decode("utf-8")}')
+            to_return.append(f'STDOUT:{output.stdout}')
+            to_return.append(f'STDERR:{output.stderr}')
         if output.returncode != 0:
             to_return.append(f'Process exited with code: {output.returncode}')
         return '\n'.join(to_return)

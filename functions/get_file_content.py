@@ -12,15 +12,15 @@ def get_file_content(working_directory, file_path):
         return str(e)
     
     if not file_path.exists():
-        raise f'ERROR: {file_path} not found'
+        raise FunctionError('ERROR: {file_path} not found')
 
     if not file_path.is_file():
-        return f'ERROR: "{file_path}" is not a file'
+        return FunctionError('ERROR: "{file_path}" is not a file')
     
     file_size = file_path.stat().st_size
 
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read(MAX_CHARS)
     except Exception as e:
         return f'ERROR: {str(e)}'
